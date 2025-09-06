@@ -6,8 +6,40 @@ class Participante:
         self.institucion = institucion
     def mostrarparticipantes(self):
         return f"Nombre:{self.nombre}, Institucion:{self.institucion},"
-class Categoria(Participante):
+class BandaEscolar(Participante):
     categoriasvalidas = ["Primaria", "Basico", "Diversificado"]
+    def __init__(self,nombre,institucion, categoria):
+        super().__init__(nombre, institucion)
+        self.categoria = None
+        self.set_categoria(categoria)
+    def set_categoria(self,categoria):
+        if categoria not in BandaEscolar.categoriasvalidas:
+            raise ValueError(f"Categoria invalida: {categoria}")
+        self.categoria = categoria
+class Criterios(BandaEscolar):
+    criterios = ["ritmo","uniformidad","coreografia","alineacion","puntualidad"]
+    def __init__(self,nombre,institucion, categoria):
+        super().__init__(nombre, institucion,categoria)
+        self.puntajes = {}
+    def registro_puntajes(self,puntajes:dict):
+        if set(puntajes.keys()) != set(self.criterios):
+            raise ValueError(f"Verifica los criterios")
+        for criterio, valor in puntajes.items():
+            if not(0 <= valor <= 10):
+                raise ValueError(f"Valor invalido: {valor}")
+        self.puntajes = puntajes
+    def total(self):
+        return sum(self.puntajes.values()) if self.puntajes else 0
+    def promedio(self):
+        return self.total()/len(self.puntajes) if self.puntajes else 0
+    def mostrarpuntajes(self):
+        info = super().mostrarparticipantes() + f"|categoria: {self.categoria}"
+        if self.puntajes:
+            info += f"| Total: {self.total()}"
+        return info
+class Concurso:
+    def __init__(self,nombre,fecha):
+        self.nombre
 
 class ConcursoBandasApp:
     def __init__(self):
