@@ -1,4 +1,6 @@
 import tkinter as tk
+from tkinter import messagebox
+
 
 class Participante:
     def __init__(self, nombre, institucion):
@@ -39,7 +41,29 @@ class Criterios(BandaEscolar):
         return info
 class Concurso:
     def __init__(self,nombre,fecha):
-        self.nombre
+        self.nombre = nombre
+        self.fecha = fecha
+        self.bandas = []
+    def inscribir_banda(self, banda:BandaEscolar):
+        if any(b.nombre == banda.nombre for b in self.bandas):
+            raise ValueError("La banda ya existe")
+        self.bandas.append(banda)
+    def registrar_evaluacion(self,nombre_banda, puntajes):
+        for banda in self.bandas:
+            if banda.nombre == nombre_banda:
+                banda.registrar_puntajes(puntajes)
+                return
+        raise ValueError(f"No existe la banda {nombre_banda}")
+    def listar_bandas(self):
+        print(f"Listado de bandas")
+        for banda in self.bandas:
+            print(banda.mostrarpuntajes())
+    def ranking(self):
+        ordenados = sorted(self.bandas, key = lambda b: (b.total, b.promedio), reverse = True)
+        print("\n Ranking Final")
+        for i,banda in enumerate(ordenados,1):
+            print(f"{i}.{banda.nombre}, {banda.institucion}, {banda.categoria}, Total: {banda.total}")
+
 
 class ConcursoBandasApp:
     def __init__(self):
@@ -71,19 +95,63 @@ class ConcursoBandasApp:
         self.ventana.config(menu=barra)
 
     def inscribir_banda(self):
-        tk.Toplevel(self.ventana).title("Inscribir Banda")
+        ventana = tk.Toplevel(self.ventana)
+        ventana.title("Inscribir Banda")
+        tk.Label(ventana, text = "Nombre de la banda").grid(row = 0, column = 0)
+        tk.Label(ventana, text = "institucion").grid(row = 1, column = 0)
+        tk.Label(ventana, text = "Categoria").grid(row = 2, column = 0)
+        nombre_entrada = tk.Entry(ventana)
+        inst_entrada = tk.Entry(ventana)
+        cat_entry = tk.Entry(ventana)
+        nombre_entrada.grid(row = 0, column = 1)
+        inst_entrada.grid(row = 1, column = 1)
+        cat_entry.grid(row = 2, column = 1)
+        def guardar():
+            try:
+                banda = BandaEscolar(nombre_entrada.get(), inst_entrada.get(), cat_entry.get())
+                messagebox.showinfo("Se inscribio correctamente")
+                ventana.destroy()
+            except Exception as e:
+                messagebox.showerror("Error",str(e))
+        tk.Button(ventana, text = "Guardar", command = guardar).grid(row = 6, column = 0,columnspan = 2)
 
     def registrar_evaluacion(self):
-        print("Se abrió la ventana: Registrar Evaluación")
+        ventana = tk.Toplevel(self.ventana)
         tk.Toplevel(self.ventana).title("Registrar Evaluación")
+        tk.Label(ventana, text = "Nombre de la banda").grid(row = 0, column = 0)
+        nombre_entrada = tk.Entry(ventana)
+        nombre_entrada.grid(row = 0, column = 1)
+        entradas = {}
+        for i, crit in enumerate(Criterios, start=1):
+            tk.Label(ventana, text = crit.capitalize().grid(row = i, column = 0))
+            ent = tk.Entry(ventana)
+            ent.grid(row = i, column = 1)
+            entradas[crit] = ent
+        def guardar():
+            try:
+                puntajes = {c:int(e.get())for c,e in entradas.items()}
+                self.concurso.registrar_evaluacion(nombre_entrada.get(), puntajes)
+                messagebox.showinfo("Se registrado correctamente")
+                ventana.destroy()
+            except Exception as e:
+                messagebox.showerror("Error",str(e))
+        tk.Button(ventana, text = "Guardar", command = guardar).grid(row = 6, column = 0,columnspan = 2)
 
     def listar_bandas(self):
-        print("Se abrió la ventana: Listado de Bandas")
+        ventana = tk.Toplevel(self.ventana)
         tk.Toplevel(self.ventana).title("Listado de Bandas")
+        text = tk.Text(ventana, width = 60, height = 15)
+        text.pack()
+        for info in self.concurso.listar_bandas():
+            text.insert(tk.END, info + "\n")
 
     def ver_ranking(self):
-        print("Se abrió la ventana: Ranking Final")
+        ventana = tk.Toplevel(self.ventana)
         tk.Toplevel(self.ventana).title("Ranking Final")
+        text = tk.Text(ventana , width = 60, height = 15)
+        text.pack()
+        for i, band in enumerate(self.concurso.ranking(),1):
+            text.insert(tk.END, f"{i}.{band.nombre}, {band.institucion}, {band.categoria}, TOTAL: {band.total}")
 
 
 if __name__ == "__main__":
