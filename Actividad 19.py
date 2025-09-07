@@ -10,8 +10,8 @@ class Participante:
 
 
 class BandaEscolar(Participante):
-    CATEGORIAS_VALIDAS = ["Primaria", "Básico", "Diversificado"]
-    CRITERIOS = ["ritmo", "uniformidad", "coreografía", "alineación", "puntualidad"]
+    CATEGORIAS_VALIDAS = ["Primaria", "Basico", "Diversificado"]
+    CRITERIOS = ["ritmo (1 a 10)", "uniformidad(1 a 10)", "coreografía(1 a 10)", "alineación(1 a 10)", "puntualidad(1 a 10)"]
 
     def __init__(self, nombre, institucion, categoria):
         super().__init__(nombre, institucion)
@@ -107,19 +107,21 @@ class ConcursoBandasApp:
 
         tk.Label(ventana, text="Nombre de la Banda").grid(row=0, column=0)
         tk.Label(ventana, text="Institución").grid(row=1, column=0)
-        tk.Label(ventana, text="Categoría").grid(row=2, column=0)
+        tk.Label(ventana, text="Categoría").grid(row=2, column=0, pady = 5, sticky="W")
 
         nombre_entry = tk.Entry(ventana)
         inst_entry = tk.Entry(ventana)
-        cat_entry = tk.Entry(ventana)
 
         nombre_entry.grid(row=0, column=1)
         inst_entry.grid(row=1, column=1)
-        cat_entry.grid(row=2, column=1)
+        categoria_var = tk.StringVar(ventana)
+        categoria_var.set(BandaEscolar.CATEGORIAS_VALIDAS[0])
+        menu = tk.OptionMenu(ventana,categoria_var, *BandaEscolar.CATEGORIAS_VALIDAS)
+        menu.grid(row=2, column=1, padx = 10, pady = 5)
 
         def guardar():
             try:
-                banda = BandaEscolar(nombre_entry.get(), inst_entry.get(), cat_entry.get())
+                banda = BandaEscolar(nombre_entry.get(), inst_entry.get(), categoria_var.get())
                 self.concurso.inscribir_banda(banda)
                 messagebox.showinfo("Éxito", f"Banda '{banda.nombre}' inscrita correctamente.")
                 ventana.destroy()
